@@ -144,6 +144,12 @@ JavaScript API
 
           (Default: ``null``) An object with attributes x, y, width, and height.
 
+       .. js:attribute:: options.save_to_server
+
+          (Default: ``false``) If true, then the Save Map action will post map
+          data to the relative URL "save". Used by Python package to save map
+          directly to a local file.
+
        **Applied data**
 
        .. js:attribute:: options.reaction_data

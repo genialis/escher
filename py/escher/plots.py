@@ -230,6 +230,21 @@ def _load_resource(resource, name, safe=False):
     raise Exception('Could not load %s.' % name)
 
 
+def run_save_to_map_json(json_data, path):
+    """Save json data to path"""
+    # parse and then dump json to ensure that we get an OK json file at the end
+    try:
+        data = json.loads(json_data)
+        with open(path, 'w') as f:
+            json.dump(data, f)
+    except Exception as e:
+        print(e)
+        return False
+    else:
+        print('Saved map to file: %s' % path)
+        return True
+
+
 class Builder(object):
     """A metabolic map that can be viewed, edited, and used to visualize data.
 
@@ -475,7 +490,7 @@ class Builder(object):
                   html_wrapper=False, enable_editing=False, enable_keys=False,
                   minified_js=True, fill_screen=False, height='800px',
                   never_ask_before_quit=False, static_site_index_json=None,
-                  protocol=None, ignore_bootstrap=False):
+                  protocol=None, ignore_bootstrap=False, save_to_map_json=False):
         """Generate the Escher HTML.
 
         Arguments
@@ -522,6 +537,8 @@ class Builder(object):
         ignore_bootstrap: Do not use Bootstrap for buttons, even if it
         available. This is used to embed Escher in a Jupyter notebook where it
         conflicts with the Jupyter Boostrap installation.
+
+        save_to_map_json: See display_in_browser doc string.
 
         """
 
@@ -580,6 +597,7 @@ class Builder(object):
             'reaction_data': self.reaction_data,
             'metabolite_data': self.metabolite_data,
             'gene_data': self.gene_data,
+            'save_to_server': save_to_map_json,
         }
         # Add the specified options
         for option in self.options:
@@ -669,7 +687,7 @@ class Builder(object):
 
     def display_in_browser(self, ip='127.0.0.1', port=7655, n_retries=50, js_source='web',
                            menu='all', scroll_behavior='pan', enable_editing=True, enable_keys=True,
-                           minified_js=True, never_ask_before_quit=False):
+                           minified_js=True, never_ask_before_quit=False, save_to_map_json=False):
         """Launch a web browser to view the map.
 
         :param ip: The IP address to serve the map on.
@@ -718,12 +736,28 @@ class Builder(object):
             Never display an alert asking if you want to leave the page. By
             default, this message is displayed if enable_editing is True.
 
+        :param Boolean save_to_map_json:
+
+            If True, then saving in the Escher map will send data back to Python
+            and overwrite the file described in the argument map_json. An error
+            will be generated if save_to_map_json is True and map_json is not a
+            file path.
+
         """
+        if save_to_map_json:
+            if not self.map_json or not isfile(self.map_json):
+                raise Exception(('If save_to_map_json is True, then map_json '
+                                 'must specify the path of a JSON file.'))
+            save_fn = lambda json: run_save_to_map_json(json, self.map_json)
+        else:
+            save_fn = None
+            save_to_map_json = False
         html = self._get_html(js_source=js_source, menu=menu, scroll_behavior=scroll_behavior,
                               html_wrapper=True, enable_editing=enable_editing, enable_keys=enable_keys,
                               minified_js=minified_js, fill_screen=True, height="100%",
-                              never_ask_before_quit=never_ask_before_quit)
-        serve_and_open(html, ip=ip, port=port, n_retries=n_retries)
+                              never_ask_before_quit=never_ask_before_quit,
+                              save_to_map_json=save_to_map_json)
+        serve_and_open(html, ip=ip, port=port, n_retries=n_retries, save_fn=save_fn)
 
 
     def save_html(self, filepath=None, overwrite=False, js_source='web',

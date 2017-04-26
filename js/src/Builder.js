@@ -112,6 +112,7 @@ function init (map_data, model_data, embedded_css, selection, options) {
     show_gene_reaction_rules: false,
     hide_all_labels: false,
     canvas_size_and_loc: null,
+    save_to_server: false,
     // applied data
     // reaction
     reaction_data: null,

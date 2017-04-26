@@ -1,5 +1,5 @@
 """ The following code has been adapted from mpld3. Modifications (c) 2014,
-Zachary King.
+University of California, San Diego.
 
 mpld3, http://mpld3.github.io/, A Simple server used to show mpld3 images.
 Copyright (c) 2013, Jake Vanderplas
@@ -37,6 +37,7 @@ import webbrowser
 import socket
 import itertools
 import random
+import json
 
 IPYTHON_WARNING = """
 Note: You must interrupt the kernel to end this command
@@ -49,7 +50,7 @@ except ImportError:
     # Python 3.x
     from http import server
 
-def generate_handler(html, files=None):
+def generate_handler(html, files=None, save_fn=None):
     if files is None:
         files = {}
 
@@ -70,6 +71,28 @@ def generate_handler(html, files=None):
             else:
                 self.send_error(404)
 
+        def do_POST(self):
+            # With save_to_map_json option, Escher will POST to "save" to save
+            # map data.
+            if self.path == '/save':
+                if save_fn:
+                    content_len = int(self.headers.get('content-length', 0))
+                    data = self.rfile.read(content_len).decode('utf-8')
+                    res = save_fn(data)
+                    if res:
+                        self.send_response(200)
+                        self.send_header('Content-type', 'application/json')
+                        self.end_headers()
+                        data = {'status': 'success'}
+                        self.wfile.write(json.dumps(data).encode('utf-8'))
+                        return
+                    else:
+                        self.send_error(404, 'Bad save_fn result')
+                else:
+                    self.send_error(500, 'No save_fn')
+            else:
+                self.send_error(404)
+
     return MyHandler
 
 def find_open_port(ip, port, n=50):
@@ -86,7 +109,7 @@ def find_open_port(ip, port, n=50):
     raise ValueError("no open ports found")
 
 def serve_and_open(html, ip='127.0.0.1', port=8888, n_retries=50, files=None,
-                   ipython_warning=True):
+                   ipython_warning=True, save_fn=None):
     """Start a server serving the given HTML, and open a browser
 
     Parameters
@@ -103,9 +126,11 @@ def serve_and_open(html, ip='127.0.0.1', port=8888, n_retries=50, files=None,
         dictionary of extra content to serve
     ipython_warning : bool (optional)
         if True (default), then print a warning if this is used within IPython
+    save_fn: Callback function for saving map JSON. Takes the JSON as an
+        argument and returns True for success.
     """
     port = find_open_port(ip, port, n_retries)
-    Handler = generate_handler(html, files)
+    Handler = generate_handler(html, files, save_fn)
     srvr = server.HTTPServer((ip, port), Handler)
 
     if ipython_warning:

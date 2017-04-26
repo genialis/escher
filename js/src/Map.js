@@ -64,6 +64,7 @@ var SearchIndex = require('./SearchIndex')
 var bacon = require('baconjs')
 var _ = require('underscore')
 var d3_select = require('d3-selection').select
+var d3_request = require('d3-request').request
 
 var Map = utils.make_class()
 // class methods
@@ -2157,7 +2158,19 @@ function full_screen () {
 // IO
 
 function save () {
-  utils.download_json(this.map_for_export(), this.map_name)
+  if (this.settings.get_option('save_to_server')) {
+    this.set_status('Saving to server')
+    d3_request('save').post(JSON.stringify(this.map_for_export()), function (error, data) {
+      if (error || JSON.parse(data.response).status !== 'success') {
+        console.error(error, data)
+        this.set_status('Could not save to server', 2000)
+      } else {
+        this.set_status('Saved to server', 2000)
+      }
+    }.bind(this))
+  } else {
+    utils.download_json(this.map_for_export(), this.map_name)
+  }
 }
 
 function map_for_export () {
