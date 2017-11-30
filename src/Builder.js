@@ -529,11 +529,12 @@ class Builder {
     }
   }
 
-    renderSearchBar (hide) {
+    renderSearchBar (hide, searchItem) {
     const searchBarNode = this.search_bar_div.node()
     preact.render(
       <SearchBar
         visible={!hide}
+        searchItem={searchItem}
         searchIndex={this.map.search_index}
         map={this.map}
         ref={instance => { this.searchBarRef = instance }}

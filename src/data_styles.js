@@ -262,8 +262,7 @@ function gene_string_for_data (rule, gene_values, genes, styles,
       var gene = genes[i]
       if (text.indexOf(gene.bigg_id) !== -1) {
         // replace with names
-        if (identifiers_on_map === 'name')
-          text = replace_gene_in_rule(text, gene.bigg_id, gene.name)
+        text = replace_gene_in_rule(text, gene.bigg_id, gene.name)
         return { bigg_id: gene.bigg_id, name: gene.name, text: text }
       }
     }
@@ -297,7 +296,7 @@ function text_for_data (d, f) {
 
   // definitions
   function null_or_d (d, format) {
-    return d === null ? '(nd)' : format(d)
+    return d === null ? '' : format(d)
   }
 }
 

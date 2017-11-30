@@ -229,8 +229,6 @@ function update_reaction_label (update_selection, has_data_on_reactions) {
                                      show_gene_reaction_rules &&
                                      (!hide_all_labels))
       if (show_gene_string) {
-        // TODO do we ever use gene_string?
-        console.warn('Showing gene_string. See TODO in source.')
         return d.gene_string
       } else if (show_gene_reaction_rule) {
         // make the gene string with no data
