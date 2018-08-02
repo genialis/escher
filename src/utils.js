@@ -20,7 +20,6 @@ module.exports = {
   load_files: load_files,
   load_the_file: load_the_file,
   make_class: make_class,
-  class_with_optional_new: class_with_optional_new,
   setup_defs: setup_defs,
   draw_an_object: draw_an_object,
   draw_a_nested_object: draw_a_nested_object,
@@ -224,18 +223,6 @@ function make_class () {
     }
   }
   return constructor
-}
-
-/**
- * Return a class that can be instantiated without the new keyword.
- * @param {Class} AClass - Any ES6 class.
- */
-function class_with_optional_new (AClass) {
-  return new Proxy(AClass, {
-    apply (Target, thisArg, args) {
-      return new Target(...args)
-    }
-  })
 }
 
 function setup_defs(svg, style) {

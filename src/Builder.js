@@ -1210,4 +1210,4 @@ class Builder {
   }
 }
 
-export default utils.class_with_optional_new(Builder)
+export default Builder
